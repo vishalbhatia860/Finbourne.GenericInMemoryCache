@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Finbourne.GenericInMemoryCache
 {
-    public class InMemoryCache: IGenericInMemoryCache
-    {        
+    public class InMemoryCache : IGenericInMemoryCache
+    {
         private readonly ILogger<InMemoryCache> logger;
         private readonly ConcurrentDictionary<string, object> _cache;
         private readonly LinkedList<string> _lruCache;
-        private readonly CacheConfiguration cacheConfiguration; 
+        private readonly CacheConfiguration cacheConfiguration;
         private readonly object _lock = new();
         // Event to notify when an item is evicted
         public event EventHandler<ICacheItemEvictedEventArgs>? ItemEvicted = null;
@@ -24,27 +24,27 @@ namespace Finbourne.GenericInMemoryCache
             _lruCache = new LinkedList<string>();
         }
 
-        public Task SetCacheAsync<T>(string key, T value)
+        public Task SetAsync<T>(string key, T value)
         {
             lock (_lock)
             {
                 if (_cache.Count >= this.cacheConfiguration.MaxCacheSize && !_cache.ContainsKey(key))
                 {
                     var lruKey = _lruCache.Last?.Value;
-                    logger.LogInformation($"Max cache size exceeded. Removing least used key: {lruKey}.");
+                    logger.LogInformation($"Max cache size exceeded. Removing least recently used key: {lruKey}.");
                     if (!string.IsNullOrEmpty(lruKey))
                     {
-                        DeleteCacheAsync(lruKey).Wait();
+                        DeleteAsync(lruKey).Wait();
                     }
                 }
-                _cache.AddOrUpdate(key, value, (_, _) => value);               
+                _cache.AddOrUpdate(key, value, (_, _) => value);
                 _lruCache.AddFirst(key);
             }
 
             logger.LogInformation("Key {key} added to cache", key);
             return Task.CompletedTask;
         }
-        public Task<T?> GetCacheAsync<T>(string key)
+        public Task<T?> GetAsync<T>(string key)
         {
             if (_cache.TryGetValue(key, out var _value))
             {
@@ -64,10 +64,10 @@ namespace Finbourne.GenericInMemoryCache
                 return Task.FromResult(default(T?));
 
             }
-            
+
         }
 
-        public Task<bool> DeleteCacheAsync(string key)
+        public Task<bool> DeleteAsync(string key)
         {
             bool is_deleted = _cache.TryRemove(key, out var removed_val);
             if (is_deleted)
@@ -76,8 +76,8 @@ namespace Finbourne.GenericInMemoryCache
                 {
                     _lruCache.Remove(key);
                 }
-                OnItemEvicted(key, removed_val);
                 logger.LogInformation($"key deleted from cache: {key}");
+                OnItemEvicted(key, removed_val);
             }
             else
             {
@@ -86,7 +86,7 @@ namespace Finbourne.GenericInMemoryCache
             return Task.FromResult(is_deleted);
         }
 
-        public Task PurgeCacheAsync()
+        public Task PurgeAsync()
         {
             lock (_lock)
             {

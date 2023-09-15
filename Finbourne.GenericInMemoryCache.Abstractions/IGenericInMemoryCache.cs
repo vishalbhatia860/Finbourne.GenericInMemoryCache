@@ -2,13 +2,13 @@
 {
     public interface IGenericInMemoryCache
     {
-        public Task<T?> GetCacheAsync<T>(string key);
+        public Task<T?> GetAsync<T>(string key);
 
-        public Task SetCacheAsync<T>(string key, T value);
+        public Task SetAsync<T>(string key, T value);
 
-        public Task<bool> DeleteCacheAsync(string key);
+        public Task<bool> DeleteAsync(string key);
 
-        public Task PurgeCacheAsync();
+        public Task PurgeAsync();
 
         public event EventHandler<ICacheItemEvictedEventArgs> ItemEvicted;
 

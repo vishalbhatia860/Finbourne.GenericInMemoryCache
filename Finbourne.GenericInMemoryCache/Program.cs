@@ -2,7 +2,6 @@
 using Finbourne.GenericInMemoryCache.Client;
 using Microsoft.Extensions.DependencyInjection;
 
-
 namespace Finbourne.GenericInMemoryCache
 {
     internal class Program
@@ -10,18 +9,16 @@ namespace Finbourne.GenericInMemoryCache
         static async Task Main(string[] args)
         {
             var host = Setup.SetupDI().Build();
-           
+
             var cache = host.Services.GetRequiredService<IGenericInMemoryCache>();
             cache.ItemEvicted += Cache_ItemEvicted;
-            
-            await cache.SetCacheAsync("Key1", "value 1");
-            await cache.SetCacheAsync("Key2", "value 2");
-            await cache.SetCacheAsync("Key3", "value 3");
-            await cache.SetCacheAsync("Key4", "value 4");
 
-            string? value1 = await cache.GetCacheAsync<string>("key1");
-            Console.WriteLine($"Value of key1 is {value1}");
+            await cache.SetAsync("Key1", "value 1");
+            await cache.SetAsync("Key2", "value 2");
+            await cache.SetAsync("Key3", "value 3");
+            await cache.SetAsync("Key4", "value 4");
 
+            string? value1 = await cache.GetAsync<string>("key1");
             Console.ReadLine();
         }
 
@@ -30,6 +27,5 @@ namespace Finbourne.GenericInMemoryCache
             Console.WriteLine($"At client side item evicted event: Item evicted: Key={e.Key}, Value={e.Value}");
         }
 
-      
     }
 }
