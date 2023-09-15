@@ -24,6 +24,7 @@ This in-memory cache project provides a simple and generic way to store key-valu
 - LRU eviction policy.
 - Customizable maximum cache size.
 - Thread-safe operations.
+- Eviction event notification
 - Easy-to-use API.
 
 ## Installation
@@ -78,4 +79,4 @@ To use the cache, you first need to initialize it with your desired maximum capa
 ### Eviction Policy
 
 When the cache reaches its maximum capacity, it will automatically remove the least recently used items to make space for new entries. 
-You don't need to manage this process manually.
+You don't need to manage this process manually. Also the client who has subscribed to the event will get notified when the item gets evicted from cache.
