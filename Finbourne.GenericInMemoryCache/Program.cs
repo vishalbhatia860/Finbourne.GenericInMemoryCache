@@ -10,8 +10,10 @@ namespace Finbourne.GenericInMemoryCache
         static async Task Main(string[] args)
         {
             var host = Setup.SetupDI().Build();
-
+           
             var cache = host.Services.GetRequiredService<IGenericInMemoryCache>();
+            cache.ItemEvicted += Cache_ItemEvicted;
+            
             await cache.SetCacheAsync("Key1", "value 1");
             await cache.SetCacheAsync("Key2", "value 2");
             await cache.SetCacheAsync("Key3", "value 3");
@@ -22,6 +24,12 @@ namespace Finbourne.GenericInMemoryCache
 
             Console.ReadLine();
         }
-        
+
+        private static void Cache_ItemEvicted(object? sender, ICacheItemEvictedEventArgs e)
+        {
+            Console.WriteLine($"At client side item evicted event: Item evicted: Key={e.Key}, Value={e.Value}");
+        }
+
+      
     }
 }

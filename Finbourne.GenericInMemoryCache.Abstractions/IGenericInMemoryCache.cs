@@ -10,5 +10,7 @@
 
         public Task PurgeCacheAsync();
 
+        public event EventHandler<ICacheItemEvictedEventArgs> ItemEvicted;
+
     }
 }

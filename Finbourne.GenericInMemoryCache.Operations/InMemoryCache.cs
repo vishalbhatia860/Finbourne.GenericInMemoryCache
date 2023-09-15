@@ -11,6 +11,8 @@ namespace Finbourne.GenericInMemoryCache
         private readonly LinkedList<string> _lruCache;
         private readonly CacheConfiguration cacheConfiguration; 
         private readonly object _lock = new();
+        // Event to notify when an item is evicted
+        public event EventHandler<ICacheItemEvictedEventArgs>? ItemEvicted = null;
 
         public InMemoryCache(CacheConfiguration config, ILogger<InMemoryCache> logger)
         {
@@ -32,11 +34,7 @@ namespace Finbourne.GenericInMemoryCache
                     logger.LogInformation($"Max cache size exceeded. Removing least used key: {lruKey}.");
                     if (!string.IsNullOrEmpty(lruKey))
                     {
-                        _cache.TryRemove(lruKey, out var oldValue);
-                        
-                        logger.LogInformation($"Key {lruKey} removed from cache.");
-                        _lruCache.RemoveLast();
-                        
+                        DeleteCacheAsync(lruKey).Wait();
                     }
                 }
                 _cache.AddOrUpdate(key, value, (_, _) => value);               
@@ -78,6 +76,7 @@ namespace Finbourne.GenericInMemoryCache
                 {
                     _lruCache.Remove(key);
                 }
+                OnItemEvicted(key, removed_val);
                 logger.LogInformation($"key deleted from cache: {key}");
             }
             else
@@ -95,6 +94,12 @@ namespace Finbourne.GenericInMemoryCache
                 _cache.Clear();
                 logger.LogInformation($"Purged cache: Count: {_lruCache.Count}");
             }
+            return Task.CompletedTask;
+        }
+
+        private Task OnItemEvicted(object key, object value)
+        {
+            ItemEvicted?.Invoke(this, new CacheItemEvictedEventArgs(key, value));
             return Task.CompletedTask;
         }
 
